@@ -1,3 +1,4 @@
+from pyspark import StorageLevel
 from pyspark.ml import Transformer
 from pyspark.ml.param.shared import HasInputCol, HasOutputCol, Param
 from pyspark import keyword_only
@@ -56,5 +57,8 @@ class FeatureHashing(Transformer, HasInputCol, HasOutputCol):
         out_col = self.getOutputCol()
         num_col = dataset[self.getNumericalCol()]
         cat_col = dataset[self.getCategoricalCol()]
-        return dataset.withColumn(out_col, udf(f, t)(num_col, cat_col))
+        return dataset.withColumn(out_col, udf(f, t)(num_col, cat_col))\
+                      .drop(self.getNumericalCol(), self.getCategoricalCol())\
+                      .persist(StorageLevel.MEMORY_AND_DISK)
+
 
